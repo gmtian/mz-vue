@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="film-list">
     <Banner :banners="bannerList"></Banner>
 
     <div class="tabs-bar-wrapper">
@@ -94,6 +94,7 @@ export default {
 @import "../styles/common/mixins.less";
 
 .film-list {
+  padding-bottom: 50px;
   .city-fixed {
     position: absolute;
     top: 18px;

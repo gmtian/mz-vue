@@ -16,5 +16,6 @@ export default new VueRouter({
         },
         { path: '/cinemas', component: () => import('./views/Cinema.vue') },
         { path: '/center', component: () => import('./views/Center.vue') },
+        { path: '/film/:id', name: 'detail', component: () => import('./views/Detail.vue') },
     ]
 })

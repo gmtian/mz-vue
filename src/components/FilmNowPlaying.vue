@@ -2,45 +2,100 @@
   <div class="film-list-content">
     <div class="nowPlayingList-wrap">
       <ul>
-        <li class="item">
-          <a href="#/film/4480">
+        <li class="item"
+        v-for="film in filmList"
+        :key="film.filmId">
+          <router-link :to="{name: 'detail', params: { id: film.filmId } }">
             <div class="img">
-              <img
-                src="https://pic.maizuo.com/usr/movie/85f4fc27c6b90d7e84295e115837728b.jpg?x-oss-process=image/quality,Q_70"
-                alt
-              >
+              <img  :src="film.poster" alt >
             </div>
             <div class="info">
               <div class="film-name info-col">
-                <span class="name">老师·好</span>
-                <span class="item">2D</span>
+                <span class="name">{{ film.name }}</span>
+                <span class="item">{{ film.filmType.name }}</span>
               </div>
               <div class="film-grade info-col" style="visibility: visible;">
                 <span class="label">观众评分</span>
-                <span class="grade">7</span>
+                <span class="grade">{{ film.grade }}</span>
               </div>
               <div class="film-actors info-col">
-                <span class="label">主演：于谦 汤梦佳 秦鸣悦 王广源 孙艺杨</span>
+                <span class="label">主演：{{ actorsFn(film.actors) }}</span>
               </div>
               <div class="film-detail info-col">
-                <span class="label">中国大陆 | 100分钟</span>
+                <span class="label">{{ film.nation }} | {{ film.runtime }}分钟</span>
               </div>
             </div>
             <div class="buy">购票</div>
-          </a>
+          </router-link>
         </li>
       </ul>
     </div>
+    <div class="load-more" @click="loadMore" v-if="pageNum < totalPage">加载更多...</div>
+    <div class="load-more" v-else>已加载全部</div>
   </div>
 </template>
 
 <script>
 import Axios from 'axios';
 export default {
+  data() {
+    return {
+      filmList: [],
+      pageNum: 1,
+      pageSize: 20,
+      total: 10,
+    }
+  },
+
+  computed: {
+    totalPage() {
+      return Math.ceil(this.total / this.pageSize);
+    }
+  },
+
   methods: {
     getList() {
-      Axios.get('https://m.maizuo.com/gateway')
+      Axios.get('https://m.maizuo.com/gateway',{
+        params: {
+          cityId: 440300,
+          pageNum: this.pageNum,
+          pageSize: this.pageSize,
+          type: 1,
+          k: 2066767
+        },
+        headers: {
+          'X-Client-Info': '{"a":"3000","ch":"1002","v":"1.0.0","e":"15547213092100239007919"}',
+          'X-Host': 'mall.film-ticket.film.list'
+        }
+      }).then( res => {
+        let data = res.data;
+        if(data.status === 0){
+          this.total = data.data.total;
+          // this.filmList = data.data.films;
+          this.filmList = this.filmList.concat(data.data.films);
+          // this.filmList.push(...data.data.films);
+        }else{
+          alert(data.msg);
+        }
+      })
+    },
+
+
+    loadMore(){
+      this.getList();
+      this.pageNum ++;
+    },
+
+    actorsFn(actors = []) {
+      let temp = actors.map(item => {
+        return item.name;
+      })
+      return temp.join('、');
     }
+  },
+
+  created() {
+    this.getList();
   },
 };
 </script>
@@ -153,6 +208,11 @@ export default {
         position: relative;
       }
     }
+  }
+  .load-more{
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
   }
 }
 </style>
