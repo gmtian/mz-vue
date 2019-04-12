@@ -14,34 +14,33 @@
           <div class="hot-city">
             <div class="city-index-title">热门城市</div>
             <ul class="city-index-detail">
-              <li class="city-item-detail">
-                <div class="city-item-text">上海</div>
-              </li>
-              <li class="city-item-detail">
-                <div class="city-item-text">天津</div>
+              <li class="city-item-detail"
+							v-for="city in hotCitys"
+							:key="city.cityId">
+                <div class="city-item-text">{{ city.name }}</div>
               </li>
             </ul>
           </div>
         </div>
-        <li class="lv-indexsection">
-          <p class="lv-indexsection__index">A</p>
+
+        <li class="lv-indexsection"
+				v-for="item in myCitys"
+				:key="item.py"
+				:id="item.py">
+          <p class="lv-indexsection__index">{{ item.py }}</p>
           <ul>
-            <li>安庆</li>
-            <li>安阳</li>
-            <li>安阳</li>
-            <li>安阳</li>
+            <li
+						v-for="city in item.list"
+						:key="city.cityId">{{ city.name }}</li>
           </ul>
         </li>
       </ul>
       <div class="lv-indexlist__nav">
         <ul>
-          <li>A</li>
-          <li>B</li>
-          <li>C</li>
-          <li>D</li>
-          <li>E</li>
-          <li>F</li>
-          <li>G</li>
+          <li 
+					v-for="item in pys" 
+					:key="item"
+					@click="fn1(item)" >{{ item }}</li>
         </ul>
       </div>
     </div>
@@ -51,29 +50,77 @@
 <script>
 import Axios from 'axios';
 export default {
+	data() {
+		return {
+			citys: []
+		}
+	},
 
+	computed: {
+		myCitys () {
+			var index = 0;
+			var flag = {};
+			var result = [];
+			this.citys.forEach(item => {
+				var py = item.pinyin.substr(0, 1).toUpperCase();
+				
+				if (flag[py]) {
+					result[flag[py] - 1].list.push(item);
+				} else {
+					var obj = {
+						py: py,
+						list: [ item ]
+					};
+					flag[py] = ++index;
+					result.push(obj);
+				}
+			})
+			result.sort((a,b) => {
+				return a.py.charCodeAt() - b.py.charCodeAt()
+			})
+			return result;
+		},
 
-    methods: {
-			getCtiyList () {
-				Axios.get('https://m.maizuo.com/gateway?k=5819868',{
-					headers: {
-						'X-Client-Info': '{"a":"3000","ch":"1002","v":"1.0.0","e":"15547213092100239007919"}',
-						'X-Host': 'mall.film-ticket.city.list'
-					}
-				}).then(res => {
-					let data = res.data;
-					if(data.status === 0){
-						this.citys = data.data.cities;
-					}else{
-						alert(data.msg);
-					}
-				})
-    	}
+		hotCitys () {
+			return this.citys.filter(item => {
+				return item.isHot
+			})
 		},
-		
-		created() {
-			this.getCtiyList();
+
+		pys () {
+			return this.myCitys.map(item => {
+				return item.py
+			})
+		}
+	},
+
+	methods: {
+		getCtiyList () {
+			Axios.get('https://m.maizuo.com/gateway?k=5819868',{
+				headers: {
+					'X-Client-Info': '{"a":"3000","ch":"1002","v":"1.0.0","e":"15547213092100239007919"}',
+					'X-Host': 'mall.film-ticket.city.list'
+				}
+			}).then(res => {
+				let data = res.data;
+				if(data.status === 0){
+					this.citys = data.data.cities;
+				}else{
+					alert(data.msg);
+				}
+			})
 		},
+
+		fn1 (py) {
+			var el = document.getElementById(py);
+			var box = document.getElementById('lv-indexlist__content')
+			box.scrollTop = el.offsetTop
+		}
+	},
+	
+	created() {
+		this.getCtiyList();
+	},
     
 };
 </script>
